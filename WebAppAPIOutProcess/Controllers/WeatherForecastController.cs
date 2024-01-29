@@ -39,7 +39,7 @@ namespace WebAppAPIOutProcess.Controllers
             try
             {
                 string requestData = "req";
-                string response = CoreBankingInterface.ProcessRequest(requestData);
+                string response = CoreBankingInterface.ProcessRequestAsync(requestData);
 
                 // Your actual implementation logic goes here
 
@@ -54,16 +54,40 @@ namespace WebAppAPIOutProcess.Controllers
     }
     public static class CoreBankingInterface
     {
-        public static string ProcessRequest(string requestData)
+        public static string ProcessRequestAsync(string requestData)
         {
+            string searchTerm = "test";
+            string apiUrl = $"https://www.google.com/search?q={searchTerm}";
+
+            using (HttpClient httpClient = new HttpClient())
+            {
+                try
+                {
+                    HttpResponseMessage response =  httpClient.GetAsync(apiUrl).Result;
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string content =  response.Content.ReadAsStringAsync().Result;
+                        // Process the content as needed
+                       
+                    }
+                }
+                catch (HttpRequestException ex)
+                {
+                    // Handle the exception
+                    
+                }
+            }
             // Your logic to process the request and prepare data for TCP communication
             string dataToSend = SerializeRequestData(requestData);
-
+            Thread.Sleep(500);
             // Simulating TCP socket communication
             using (TcpClient tcpClient = new TcpClient("localhost", 80))
             {
+                Thread.Sleep(500);
                 using (NetworkStream networkStream = tcpClient.GetStream())
                 {
+                    Thread.Sleep(500);
                     // Send data to the server
                     byte[] dataBytes = Encoding.UTF8.GetBytes(dataToSend);
                     networkStream.Write(dataBytes, 0, dataBytes.Length);
@@ -71,6 +95,7 @@ namespace WebAppAPIOutProcess.Controllers
                     // Receive response from the server
                     using (StreamReader reader = new StreamReader(networkStream, Encoding.UTF8))
                     {
+                        Thread.Sleep(500);
                         return reader.ReadToEnd();
                     }
                 }
